@@ -161,15 +161,31 @@ class LLMAgent:
         """
         Генерирует финальный ответ на основе истории выполнения.
         """
-        prompt = f"""
-        Based on the following conversation log, provide a direct and helpful answer to the user's original question.
-        Be concise and use the information from the tool results to support your answer.
-
-        Original User Question: {user_query}
-
-        Conversation Log:
-        {chr(10).join([msg['content'] for msg in self.conversation_history])}
-        """
+        # Проверяем, есть ли результаты в истории
+        tool_results = []
+        for msg in self.conversation_history:
+            if 'result' in msg['content']:
+                tool_results.append(msg['content'])
+        
+        # Если есть результаты инструментов, используем их напрямую
+        if tool_results:
+            # Извлекаем наиболее релевантный результат
+            # Для поиска - берем первые 3 результата
+            combined_results = "\n".join(tool_results)
+            
+            # Простой промпт для маленькой модели
+            prompt = f"""
+            Ответь на вопрос, используя информацию из результатов поиска.
+            
+            Вопрос: {user_query}
+            
+            Результаты поиска:
+            {combined_results[:1500]}  # Ограничиваем длину для маленькой модели
+            
+            Дай краткий ответ на русском языке.
+            """
+        else:
+            prompt = f"Ответь кратко на вопрос: {user_query}"
         
         payload = {
             "model": self.model,
@@ -182,9 +198,14 @@ class LLMAgent:
         try:
             response_data = self._make_api_request(payload)
             final_text = response_data["choices"][0]["message"]["content"]
-            return final_text
+            return final_text if final_text.strip() else "Не удалось сгенерировать ответ."
         except Exception as e:
-            return f"Ошибка при генерации финального ответа. Детали: {e}"
+            print(f"Ошибка при генерации финального ответа: {e}")
+            # Fallback: возвращаем первый найденный результат
+            for msg in self.conversation_history:
+                if 'result' in msg['content']:
+                    return f"Результат поиска: {msg['content'][:500]}"
+            return "Извините, не удалось обработать запрос."
 
     def process_query(self, query: str) -> str:
         """
