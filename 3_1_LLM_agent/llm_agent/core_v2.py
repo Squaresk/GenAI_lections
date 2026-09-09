@@ -86,32 +86,36 @@ class LLMAgent:
         """
         # Системный промпт, который объясняет агенту его роль и формат ответа
         system_prompt = f"""
-        You are a helpful AI planning assistant. Analyze the user's request and decide if you need to use any tools.
-        Available tools:
-        - **calculator**: For any math-related questions (numbers, calculations). Use it with the full expression.
-        - **web_search**: For finding any information about the real world (current events, facts, definitions). Use it with the user's question or a clear search query. USE ONLY RUSSIAN LANGUAGE QUERIES in this tool.
-        - **pdf_info**: For extracting information from PDF files (metadata, page count, text content). Use it with a local file path or a URL to a PDF file.
-        - **file_system**: For file operations within a secure sandbox. Use with operation parameter: 'read' (file_path), 'write' (file_path, content), 'list' [dir_path], 'delete' (file_path). All paths are restricted to the sandbox directory.
-        Your response MUST be ONLY a JSON object of the following format.
-        If one or more tools are needed to answer, return JSON of this structure:
-        {{
-        "plan": [
-            {{"action": "tool_name", "input": "some text to pass into tool"}},
-            ... //MORE ACTIONS IF NEEDED SEVERAL TOOLS. ONE ACTION FOR ONE TOOL CALL
-        ]
-        }}
-        If no tool is needed, return an empty plan: {{"plan": []}}.
+        You are an assistant that decides if tools are needed.
+        Available tools: calculator, web_search, pdf_info, file_system.
+        
+        Respond ONLY with JSON. Examples:
+        If calculator needed: {{"plan": [{{"action": "calculator", "input": "5+3*2"}}]}}
+        If web_search needed: {{"plan": [{{"action": "web_search", "input": "погода москва"}}]}}
+        If no tool needed: {{"plan": []}}
         """
+        
+        # Добавляем примеры в запрос
+        few_shot = """
+        User: Сколько будет 2+2?
+        Assistant: {"plan": [{"action": "calculator", "input": "2+2"}]}
+        
+        User: Привет!
+        Assistant: {"plan": []}
 
-        # Формируем запрос к API
+        User: Сколько будет 2+2? Когда в последний раз победил Локомотив?
+        Assistant: {"plan": [{"action": "calculator", "input": "2+2"},  {"action": "web_search", "input": "локомотив победа"}]}
+        """
+        
         payload = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": system_prompt},
+                {"role": "assistant", "content": few_shot},
                 {"role": "user", "content": query}
             ]
         }
-        
+            
         try:
             # Для Ollama может потребоваться дополнительная настройка
             if self.local:
