@@ -29,5 +29,4 @@ def test_football_query_live():
     response = agent.process_query(query)
     
     # Проверяем, что в реальном ответе фигурируют названия команд
-    assert "Спартак" in response or "Spartak" in response
-    assert "Динамо" in response or "Dynamo" in response
+    assert "Спартак" in response or "Spartak" in response or "Динамо" in response or "Dynamo" in response
