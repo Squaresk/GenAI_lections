@@ -8,6 +8,7 @@ from decouple import config
 from .tool_calculator import CalculatorTool
 from .tool_websearch import WebSearchTool
 from .tool_pdfinfo import PDFInfoTool
+from .tool_filesystem import FileSystemTool
 
 class LLMAgent:
     """
@@ -16,7 +17,7 @@ class LLMAgent:
     """
 
     def __init__(self, model: str = "tngtech/deepseek-r1t2-chimera", local: bool = False, 
-                 ollama_base_url: str = "http://localhost:11434", ollama_model: str = "qwen3:0.6b"):
+                 ollama_base_url: str = "http://localhost:11434", ollama_model: str = "qwen3.5:4b"):
         """
         Инициализирует агента.
         
@@ -44,6 +45,7 @@ class LLMAgent:
             "calculator": CalculatorTool(),
             "web_search": WebSearchTool(),
             "pdf_info": PDFInfoTool(),
+            "file_system": FileSystemTool(),
         }
         self.conversation_history = []
     
@@ -89,6 +91,7 @@ class LLMAgent:
         - **calculator**: For any math-related questions (numbers, calculations). Use it with the full expression.
         - **web_search**: For finding any information about the real world (current events, facts, definitions). Use it with the user's question or a clear search query. USE ONLY RUSSIAN LANGUAGE QUERIES in this tool.
         - **pdf_info**: For extracting information from PDF files (metadata, page count, text content). Use it with a local file path or a URL to a PDF file.
+        - **file_system**: For file operations within a secure sandbox. Use with operation parameter: 'read' (file_path), 'write' (file_path, content), 'list' [dir_path], 'delete' (file_path). All paths are restricted to the sandbox directory.
         Your response MUST be ONLY a JSON object of the following format.
         If one or more tools are needed to answer, return JSON of this structure:
         {{
