@@ -64,7 +64,7 @@ jobs:
         sleep 5
     
         # Скачиваем модель, указанную в коде теста
-        ollama pull qwen3.5:0.8b
+        ollama pull qwen3.5:4b
         
     - name: Test with pytest
       working-directory: ./3_1_LLM_agent
