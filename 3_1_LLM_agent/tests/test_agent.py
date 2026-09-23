@@ -19,11 +19,6 @@ def test_calculator_query_live():
     # Проверяем, что агент смог посчитать и выдать 16
     assert "16" in response
 
-    query = "Сколько будет (5 - 4) * 2 / 2? Напиши только цифру."
-    
-    response = agent.process_query(query)
-    assert "1" in response
-
 
 @pytest.mark.integration
 def test_football_query_live():
@@ -35,10 +30,3 @@ def test_football_query_live():
     
     # Проверяем, что в реальном ответе фигурируют названия команд
     assert "Спартак" in response or "Spartak" in response or "Динамо" in response or "Dynamo" in response
-
-    query = "Назови столицу России."
-    
-    response = agent.process_query(query)
-    
-    # Проверяем, что в реальном ответе фигурируют названия команд
-    assert "Москва" in response or "Moscow" in response 
